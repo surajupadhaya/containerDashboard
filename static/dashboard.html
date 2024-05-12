@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Container Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        #header {
+            background-color: #005792;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        #header h1 {
+            margin: 0;
+        }
+        #containers {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-gap: 20px;
+            padding: 20px;
+        }
+        .container {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .container h2 {
+            color: #005792;
+            margin-top: 0;
+        }
+        .container p {
+            margin: 5px 0;
+        }
+        .container .ports {
+            background-color: #e7f6f2;
+            border-left: 3px solid #3eadcf;
+            padding: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>Container Dashboard</h1>
+    </div>
+    <div id="containers">
+        <!-- Container data will be loaded here -->
+    </div>
+
+    <script>
+        // Function to create a container element with the provided container data
+        function createContainerElement(container) {
+            const containerDiv = document.createElement('div');
+            containerDiv.classList.add('container');
+            
+            // Map the ports array to a string, handling the absence of PublicPort
+            const portsInfo = container.ports.map(port => `${port.PrivatePort}/${port.Type}`).join(', ');
+            
+            // Set the inner HTML of the container element
+            containerDiv.innerHTML = `
+                <h2>${container.name}</h2>
+                <p><strong>ID:</strong> ${container.id}</p>
+                <p><strong>Image:</strong> ${container.image}</p>
+                <p><strong>Status:</strong> ${container.status}</p>
+                <p><strong>State:</strong> ${container.state}</p>
+                <div class="ports">
+                    <strong>Ports:</strong> ${portsInfo}
+                </div>
+            `;
+            return containerDiv;
+        }
+
+        // Fetch the container data from the server and handle the response
+        fetch('/ContainerHealth')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(containers => {
+                const containersDiv = document.getElementById('containers');
+                // Clear any existing content
+                containersDiv.innerHTML = '';
+                // Loop through the containers and add them to the div
+                containers.forEach(container => {
+                    const containerElement = createContainerElement(container);
+                    containersDiv.appendChild(containerElement);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Handle errors by displaying a message to the user
+                const containersDiv = document.getElementById('containers');
+                containersDiv.innerHTML = '<p>There was an error loading the container data.</p>';
+            });
+    </script>
+</body>
+</html>
