@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
+	"os"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -68,12 +70,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	_, err = cli.ImagePull(ctx, "docker.io/nginx:latest", image.PullOptions{})
+	getimages, err := cli.ImagePull(ctx, "docker.io/nginx:latest", image.PullOptions{})
 	if err != nil {
 		panic(err)
 	}
-	//io.Copy(os.Stdout, getimages)
-	//getimages.Close()
+	io.Copy(os.Stdout, getimages)
+	getimages.Close()
 
 	containerreouser, err := cli.ContainerCreate(ctx, &container.Config{Image: "nginx"}, nil, nil, nil, "")
 	if err != nil {
